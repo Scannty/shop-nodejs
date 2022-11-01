@@ -6,17 +6,20 @@
 <body>
     <%- include('../includes/navigation.ejs')%>
     <main>
+        <% if(errorMessage) { %>
+            <div class="user-message user-message--error"><%= errorMessage %></div>
+        <% } %>
         <form class="product-form" action="/signup" method="post">
             <div class="form-control">
                 <label for="email">Email</label>
-                <input type="text" name="email" id="title">
+                <input type="text" name="email" id="title" value="<%= oldEmail %>">
             </div>
             <div class="form-control">
                 <label for="password">Password</label>
                 <input type="text" name="password" id="imageUrl">
             </div>
             <div class="form-control">
-                <label for="confirmPassword">Password</label>
+                <label for="confirmPassword">Confirm Password</label>
                 <input type="text" name="confirmPassword" id="imageUrl">
             </div>
             <button class="btn" type="submit">Sign Up</button>

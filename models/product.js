@@ -1,6 +1,8 @@
 const mongodb = require('mongodb')
 const { getDb } = require('../util/database')
 
+const ITEMS_PER_PAGE = 2
+
 class Product {
   constructor(title, price, description, imageUrl, id, userId) {
     this.title = title
@@ -25,14 +27,22 @@ class Product {
     }
   }
 
-  static fetchAll() {
+  static fetchAll(page) {
     const db = getDb()
-    return db.collection('products').find().toArray()
+    return db
+      .collection('products')
+      .find()
+      .skip((page - 1) * ITEMS_PER_PAGE)
+      .limit(ITEMS_PER_PAGE)
+      .toArray()
   }
 
   static findById(productId) {
     const db = getDb()
-    return db.collection('products').find({ _id: new mongodb.ObjectId(productId) }).next()
+    return db
+      .collection('products')
+      .find({ _id: new mongodb.ObjectId(productId) })
+      .next()
   }
 
   static findByUserId(userId) {
@@ -43,6 +53,11 @@ class Product {
   static deleteById(productId) {
     const db = getDb()
     return db.collection('products').deleteOne({ _id: new mongodb.ObjectId(productId) })
+  }
+
+  static getNumberOfProducts() {
+    const db = getDb()
+    return db.collection('products').countDocuments()
   }
 }
 

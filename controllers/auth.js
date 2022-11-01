@@ -1,11 +1,19 @@
 const bcrypt = require('bcrypt')
 const User = require('../models/user')
+const { validationResult } = require('express-validator/check')
 
 exports.getLogin = (req, res, next) => {
+    let errorMessage = req.flash('error')
+    if (errorMessage.length > 0) {
+        errorMessage = errorMessage[0]
+    } else {
+        errorMessage = null
+    }
     res.render('auth/login', {
         pageTitle: 'Login',
         path: '/login',
-        isLoggedIn: req.session.isLoggedIn
+        isLoggedIn: req.session.isLoggedIn,
+        errorMessage
     })
 }
 
@@ -15,6 +23,7 @@ exports.postLogin = (req, res, next) => {
     User.findByEmail(email)
         .then(userInfo => {
             if (!userInfo) {
+                req.flash('error', 'Invalid email or password.')
                 res.redirect('/login')
                 throw new Error('No such user exists')
             }
@@ -23,6 +32,7 @@ exports.postLogin = (req, res, next) => {
         })
         .then(passwordMatch => {
             if (!passwordMatch) {
+                req.flash('error', 'Invalid email or password.')
                 res.redirect('/login')
                 throw new Error('Password is incorrect')
             }
@@ -40,15 +50,28 @@ exports.getSignup = (req, res, next) => {
     res.render('auth/signup', {
         pageTitle: 'Sign Up',
         path: '/signup',
-        isLoggedIn: req.session.isLoggedIn
+        isLoggedIn: req.session.isLoggedIn,
+        errorMessage: null,
+        oldEmail: ''
     })
 }
 
 exports.postSignup = (req, res, next) => {
-    const { email, password, confirmPassword } = req.body
+    const { email, password } = req.body
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(422).render('auth/signup', {
+            path: '/signup',
+            pageTitle: 'Signup',
+            isLoggedIn: req.session.isLoggedIn,
+            errorMessage: errors.array()[0].msg,
+            oldEmail: email
+        })
+    }
     User.findByEmail(email)
         .then(user => {
             if (user) {
+                req.flash('error', 'Account already exists.')
                 res.redirect('/signup')
                 throw new Error('Account already exists')
             }

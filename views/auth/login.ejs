@@ -6,7 +6,10 @@
 <body>
     <%- include('../includes/navigation.ejs')%>
     <main>
-        <form class="product-form" action="/login" method="post">
+        <% if(errorMessage) { %>
+            <div class="user-message user-message--error"><%= errorMessage %></div>
+        <% } %>
+        <form class="product-form" action="/login" method="post" novalidate>
             <div class="form-control">
                 <label for="email">Email</label>
                 <input type="text" name="email" id="title">
